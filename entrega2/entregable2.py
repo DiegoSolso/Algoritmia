@@ -3,7 +3,7 @@ import sys
 from typing import TextIO
 
 # Folleto en inglés es Leaflet
-Leaflet = tuple[int, int, int]          # (num_folleto, anchura, altura)
+Leaflet = tuple[int, int, int]  # (num_folleto, anchura, altura)
 LeafletPos = tuple[int, int, int, int]  # (num_folleto, num_hoja_de_imprenta, pos_x ,pos_y)
 
 
@@ -70,15 +70,38 @@ def process(paper_size: int, leaflet_list: list[Leaflet]) -> list[LeafletPos]:
     return resultado
 
 
-def llenar(ocupados:list[bool],leaflet: Leaflet)-> list[tuple[int,int,bool]]:
+def llenar(paper_size: int, ocupado_x: list[int, int], ocupado_y: list[int, int], base_anterior: int,
+           folleto: Leaflet) -> \
+        tuple[list[int, int], list[int, int], int, int, int, bool]:
+    if folleto[1] > paper_size or folleto[2] > paper_size:
+        raise Exception("Tamaño de folleto incorrecto")
 
-    return True
+    nuevocuadrado = False
+    posx = 0
+    posy = 0
+    if paper_size >= ocupado_y[1] + folleto[2] and paper_size >= ocupado_y[0] + folleto[1]:
+        posx = ocupado_y[0]
+        posy = ocupado_y[1]
+        if base_anterior < folleto[1]:
+            ocupado_x[0] += (folleto[1] - base_anterior)
+            base_anterior = folleto[1]
+        ocupado_y[1] += folleto[2]
+    elif paper_size >= ocupado_x[0] + folleto[1]:
+        ocupado_y[0] = ocupado_x[0]
+        ocupado_y[1] = folleto[2]
+        posx = ocupado_x[0]
+        posy = 0
+        ocupado_x[0] += folleto[1]
+    else:
+        nuevocuadrado = True
+
+    return ocupado_x, ocupado_y, posx, posy, base_anterior, nuevocuadrado
+
 
 # Muestra por la salida estandar las posiciones de los folletos (ver apartado 1.2)
 def show_results(leafletpos_list: list[LeafletPos]):
-    for l in leafletpos_list:
-        s = l[0]+" "+l[1]+" "+l[2]+" "+l[3]
-        print(s)
+    for leaflet in leafletpos_list:
+        print(f"{leaflet[0]} {leaflet[1]} {leaflet[2]} {leaflet[3]}")
 
 
 if __name__ == '__main__':
